@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Encyclopedia</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/29/29302.png">
+  <style>
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { font-family: 'Roboto', Arial, sans-serif; transition: background 0.3s, color 0.3s; height: 100vh; }
+    .fixed-header, .fixed-footer { position: fixed; left: 0; right: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: background 0.3s, color 0.3s; }
+    .fixed-header { top: 0; border-bottom: 1px solid #eaeaea; padding: 0.5rem 0; }
+    .fixed-footer { bottom: 0; border-top: 1px solid #eaeaea; text-align: center; padding: 0.5rem 0; font-size: 0.95rem; }
+    .main-content { position: absolute; left: 0; right: 0; bottom: 68px; top: 0; overflow-y: auto; padding-top: 118px; padding-bottom: 0; background: inherit; display: flex; flex-direction: column; }
+    @media (max-width: 600px) { .main-content { padding-top: 104px; bottom: 64px; } .fixed-header, .fixed-footer { padding: 0.3rem 0;} }
+    .container-custom { max-width: 700px; margin: 0 auto; padding: 0 12px; width: 100%; }
+    .logo-icon { font-size: 2rem; color: #3366cc; cursor: pointer; }
+    .theme-toggle { cursor: pointer; font-size: 1.5rem; margin-left: 10px; }
+    .news-card { box-shadow: 0 1px 4px rgba(0,0,0,0.06); border-radius: 10px; margin-bottom: 18px; background: #fff; display: flex; flex-direction: row; overflow: hidden; }
+    .news-card .news-img { width: 130px; min-width: 130px; max-width: 130px; object-fit: cover; height: 100%; background: #f1f3f4; }
+    .news-card .news-body { padding: 14px 18px 12px 18px; flex: 1 1 0; display: flex; flex-direction: column; }
+    .news-card .news-title { font-size: 1.08em; font-weight: bold; margin-bottom: 4px; color: #254a91; text-decoration: none;}
+    .news-card .news-title:hover { color: #3366cc; text-decoration: underline;}
+    .news-card .news-desc { font-size: 0.97em; color: #444; margin-bottom: 4px; }
+    .news-card .news-meta { font-size: 0.93em; color: #888; }
+    .news-card .news-source { color: #888; font-size: 0.93em; }
+    @media (max-width: 600px) {
+      .news-card { flex-direction: column; }
+      .news-card .news-img { width: 100%; min-width: 0; max-width: 100%; height: 160px; }
+      .news-card .news-body { padding: 10px 10px 7px 10px; }
+    }
+    .input-group.position-relative { position: relative; }
+    .autocomplete-suggestions {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      width: 100%;
+      max-width: none;
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-top: 0;
+      background: #fff;
+      z-index: 1000;
+      border-radius: 0 0 8px 8px;
+      overflow-y: auto;
+      max-height: 200px;
+    }
+    .autocomplete-suggestion { padding: 8px 12px; cursor: pointer; }
+    .autocomplete-suggestion:hover, .autocomplete-selected { background: #f1f3f4; }
+    body.bg-dark, body.bg-dark .main-content { background: #181c22 !important; color: #e5e6ea !important; }
+    body.bg-dark .fixed-header, body.bg-dark .fixed-footer { background: #23262d !important; color: #e5e6ea !important; border-color: #2a2d34; box-shadow: 0 2px 8px rgba(0,0,0,0.12);}
+    body.bg-dark .container-custom, body.bg-dark #results, body.bg-dark #news-block, body.bg-dark .content-block { background: transparent !important; color: #e5e6ea !important;}
+    body.bg-dark .news-card { background: #23262d; box-shadow: 0 1px 4px rgba(0,0,0,0.14);}
+    body.bg-dark .news-card .news-title { color: #7da6ff; }
+    body.bg-dark .news-card .news-title:hover { color: #a4c8ff; }
+    body.bg-dark .news-card .news-desc { color: #b0b4be; }
+    body.bg-dark .news-card .news-meta, body.bg-dark .news-card .news-source { color: #b0b4be; }
+    body.bg-dark .autocomplete-suggestions { background: #23262d; color: #e5e6ea; border-color: #2a2d34; }
+    body.bg-dark .autocomplete-suggestion:hover, body.bg-dark .autocomplete-selected { background: #283044; color: #fff; }
+    .chat-top-btns {
+      position: fixed;
+      right: 24px;
+      bottom: 90px;
+      z-index: 1060;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: flex-end;
+    }
+    #openChatBtn {
+      border-radius: 50px;
+      padding: 12px 22px;
+      font-size: 1.15em;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      background: linear-gradient(90deg, #3c7be5 0%, #7d6aff 100%);
+      color: #fff;
+      border: none;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    #openChatBtn:hover { background: linear-gradient(90deg, #7d6aff 0%, #3c7be5 100%); color: #fff; }
+    .to-top-btn {
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      background: #3c7be5;
+      color: #fff;
+      border: none;
+      font-size: 1.2em;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      transition: background 0.2s;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .to-top-btn:hover { background: #254a91; color: #fff; }
+    @media (max-width: 600px) {
+      .chat-top-btns {
+        right: 10px;
+        bottom: 80px;
+        flex-direction: row;
+        gap: 8px;
+        align-items: flex-end;
+      }
+      #openChatBtn { padding: 10px 16px; font-size: 1em; }
+      .to-top-btn { width: 38px; height: 38px; font-size: 1em; }
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <div class="fixed-header">
+    <div class="container-custom d-flex align-items-center">
+      <i class="fa-solid fa-book-open logo-icon me-2" id="mainLogo" title="Home"></i>
+      <h1 class="h4 mb-0 main-title" id="mainTitle" title="Home">Encyclopedia</h1>
+      <span class="ms-auto d-flex align-items-center">
+        <select id="lang" class="form-select form-select-sm d-inline-block w-auto me-2">
+          <option value="en">EN</option>
+          <option value="uk">UA</option>
+          <option value="ru">RU</option>
+          <option value="pl">PL</option>
+          <option value="de">DE</option>
+          <option value="fr">FR</option>
+          <option value="es">ES</option>
+          <option value="it">IT</option>
+          <option value="nb">NO</option>
+          <option value="he">HE</option>
+          <option value="zh">ZH</option>
+          <option value="ja">JA</option>
+          <option value="ko">KO</option>
+        </select>
+        <i class="fa-solid fa-moon theme-toggle" id="themeToggle" title="Switch theme"></i>
+      </span>
+    </div>
+    <div class="container-custom">
+      <form id="searchForm" class="input-group my-2 position-relative">
+        <input type="text" id="query" class="form-control" autocomplete="off" required>
+        <button class="btn btn-primary" type="submit"><i class="fa fa-search"></i> <span id="searchBtnText">Search</span></button>
+        <button type="button" class="btn btn-outline-secondary btn-random" id="randomBtn" title="Random article"><i class="fa fa-random"></i></button>
+        <div id="autocomplete" class="autocomplete-suggestions"></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="container-custom content-block">
+      <div id="news-block"></div>
+      <button id="showMoreNewsBtn" class="btn btn-outline-primary mb-3" style="display:none;">Show more news</button>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <div class="fixed-footer">
+    <div class="container-custom" id="footerText">
+      &copy; 2025 Encyclopedia | Developer: <a href="https://serhiihordiichuk.pp.ua" target="_blank" class="footer-link">Serhii Hordiichuk</a>
+    </div>
+  </div>
+
+  <div class="chat-top-btns">
+    <button id="openChatBtn"><i class="fa fa-comments"></i> AI-чат</button>
+    <button class="to-top-btn" id="toTopBtn" title="To Top">
+      <i class="fa fa-arrow-up"></i>
+    </button>
+  </div>
+
+  <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width:420px;">
+      <div class="modal-content" style="height:600px;">
+        <div class="modal-header">
+          <h5 class="modal-title" id="chatModalLabel">AI-чат (Perplexity)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-0" style="height:520px;">
+          <iframe id="chatIframe" src="https://www.perplexity.ai/" width="100%" height="100%" style="border:0;min-height:500px;" allow="clipboard-read; clipboard-write"></iframe>
+          <div id="chatFallback" style="display:none;padding:30px 10px;text-align:center;">
+            <p>AI-чат недоступний у вашому регіоні або браузері.<br>
+            <a href="https://www.perplexity.ai/" target="_blank" class="btn btn-primary mt-2">Відкрити чат-бот у новій вкладці</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="wikiModal" tabindex="-1" aria-labelledby="wikiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="wikiModalLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="wikiModalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+    const newsFeeds = {
+      en: [
+        {name: "Google News (US)", url: "https://news.google.com/rss?hl=en&gl=US&ceid=US:en"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "CNN", url: "http://rss.cnn.com/rss/edition.rss"},
+        {name: "The New York Times", url: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml"},
+        {name: "NBC News", url: "http://feeds.nbcnews.com/feeds/topstories"},
+        {name: "USA Today", url: "https://rssfeeds.usatoday.com/usatoday-NewsTopStories"},
+        {name: "CBS News", url: "http://www.cbsnews.com/latest/rss/main"},
+        {name: "BBC News", url: "http://feeds.bbci.co.uk/news/rss.xml"},
+        {name: "Sky News", url: "https://feeds.skynews.com/feeds/rss/uk.xml"},
+        {name: "The Guardian", url: "https://www.theguardian.com/uk/rss"},
+        {name: "The Telegraph", url: "https://www.telegraph.co.uk/rss.xml"},
+        {name: "The Independent", url: "https://www.independent.co.uk/news/uk/rss"}
+      ],
+      uk: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=uk&gl=UA&ceid=UA:uk"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "Укрінформ", url: "https://www.ukrinform.ua/rss/news"},
+        {name: "Українська правда", url: "https://www.pravda.com.ua/rss/"},
+        {name: "ТСН", url: "https://tsn.ua/rss/full.rss"}
+      ],
+      ru: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=ru&gl=RU&ceid=RU:ru"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "РИА Новости", url: "https://ria.ru/export/rss2/archive/index.xml"},
+        {name: "Медуза", url: "https://meduza.io/rss/all"},
+        {name: "РБК", url: "https://rssexport.rbc.ru/rbcnews/news/30/full.rss"}
+      ],
+      pl: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=pl&gl=PL&ceid=PL:pl"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "Onet Wiadomości", url: "https://wiadomosci.onet.pl/rss.xml"},
+        {name: "RMF24", url: "https://www.rmf24.pl/rss/wiadomosci.xml"},
+        {name: "Gazeta Wyborcza", url: "https://wyborcza.pl/pub/rss/wyborcza.pl/pub/rss/wyborcza.pl/index.xml"}
+      ],
+      de: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=de&gl=DE&ceid=DE:de"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "Der Spiegel", url: "https://www.spiegel.de/international/index.rss"},
+        {name: "Tagesschau", url: "https://www.tagesschau.de/xml/rss2"},
+        {name: "Die Zeit", url: "https://newsfeed.zeit.de/index"}
+      ],
+      fr: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=fr&gl=FR&ceid=FR:fr"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "Le Monde", url: "https://www.lemonde.fr/rss/une.xml"},
+        {name: "France24", url: "https://www.france24.com/fr/rss"},
+        {name: "Le Figaro", url: "https://www.lefigaro.fr/rss/figaro_actualites.xml"}
+      ],
+      es: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=es&gl=ES&ceid=ES:es"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "El País", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada"},
+        {name: "El Mundo", url: "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml"},
+        {name: "ABC España", url: "https://www.abc.es/rss/feeds/abcPortada.xml"}
+      ],
+      it: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=it&gl=IT&ceid=IT:it"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "La Repubblica", url: "https://www.repubblica.it/rss/homepage/rss2.0.xml"},
+        {name: "Corriere della Sera", url: "https://xml2.corriereobjects.it/rss/homepage.xml"},
+        {name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml"}
+      ],
+      nb: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=nb&gl=NO&ceid=NO:nb"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "NRK Nyheter", url: "https://www.nrk.no/toppsaker.rss"},
+        {name: "VG", url: "https://www.vg.no/rss/feed/?categories=1068"},
+        {name: "Aftenposten", url: "https://www.aftenposten.no/rss"}
+      ],
+      he: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=he&gl=IL&ceid=IL:he"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "Ynet", url: "https://www.ynet.co.il/Integration/StoryRss2.xml"},
+        {name: "Haaretz", url: "https://www.haaretz.co.il/rss"},
+        {name: "Israel Hayom", url: "https://www.israelhayom.co.il/rss.xml"}
+      ],
+      zh: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=zh-CN&gl=CN&ceid=CN:zh-Hans"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "新华网", url: "http://www.xinhuanet.com/rss/world.xml"},
+        {name: "人民网", url: "http://www.people.com.cn/rss/politics.xml"},
+        {name: "China Daily", url: "http://www.chinadaily.com.cn/rss/china_rss.xml"}
+      ],
+      ja: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=ja&gl=JP&ceid=JP:ja"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "NHK News", url: "https://www3.nhk.or.jp/rss/news/cat0.xml"},
+        {name: "朝日新聞", url: "https://www.asahi.com/rss/asahi/newsheadlines.rdf"},
+        {name: "毎日新聞", url: "https://mainichi.jp/rss/etc/mainichi-flash.rss"}
+      ],
+      ko: [
+        {name: "Google News", url: "https://news.google.com/rss?hl=ko&gl=KR&ceid=KR:ko"},
+        {name: "Yahoo News", url: "https://news.yahoo.com/rss/"},
+        {name: "연합뉴스", url: "https://www.yna.co.kr/rss/all"},
+        {name: "조선일보", url: "http://www.chosun.com/site/data/rss/rss.xml"},
+        {name: "동아일보", url: "https://www.donga.com/rss/total.xml"}
+      ]
+    };
+
+    let currentLang = "en";
+    let allNews = [];
+    let shownNewsCountNews = 0;
+    const PAGE_SIZE_NEWS = 10;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function renderNews() {
+      let html = '';
+      let toShow = allNews.slice(0, shownNewsCountNews);
+      toShow.forEach(item => {
+        html += `<div class="news-card">
+          ${item.thumbnail ? `<img src="${item.thumbnail}" class="news-img" alt="">` : ''}
+          <div class="news-body">
+            <a href="${item.link}" target="_blank" rel="noopener" class="news-title">${item.title}</a>
+            <div class="news-desc">${item.description || ''}</div>
+            <div class="news-meta">${item.pubDate ? new Date(item.pubDate).toLocaleString() : ''}</div>
+            <div class="news-source">Source: ${item.source}</div>
+          </div>
+        </div>`;
+      });
+      if (!toShow.length) {
+        html = `<div class="alert alert-warning mt-3">No news available at the moment. Try again later.</div>`;
+      }
+      $('#news-block').html(html);
+      $('#showMoreNewsBtn').toggle(shownNewsCountNews < allNews.length && allNews.length > 0);
+    }
+
+    function stripHtml(html) {
+      let tmp = document.createElement("DIV");
+      tmp.innerHTML = html;
+      return tmp.textContent || tmp.innerText || "";
+    }
+
+    function loadNews() {
+      allNews = [];
+      shownNewsCountNews = PAGE_SIZE_NEWS;
+      $('#news-block').html('<div class="text-center py-5"><div class="spinner-border"></div></div>');
+      let feeds = newsFeeds[currentLang] || newsFeeds["en"];
+      let requests = feeds.map(feed => {
+        return $.ajax({
+          url: 'https://api.rss2json.com/v1/api.json',
+          data: { rss_url: feed.url },
+          dataType: 'json'
+        }).then(
+          data => ({ok: true, data, feed}),
+          () => ({ok: false, feed})
+        );
+      });
+
+      Promise.all(requests).then(responses => {
+        responses.forEach((resp, i) => {
+          if(resp.ok && resp.data.status === 'ok') {
+            resp.data.items.forEach(item => {
+              let thumb = item.thumbnail || (item.enclosure && item.enclosure.link) || '';
+              if (!thumb && item.description && item.description.indexOf('<img') !== -1) {
+                let imgMatch = item.description.match(/<img[^>]+src="([^">]+)"/i);
+                if (imgMatch && imgMatch[1]) thumb = imgMatch[1];
+              }
+              allNews.push({
+                title: item.title,
+                link: item.link,
+                pubDate: item.pubDate,
+                description: stripHtml(item.description).slice(0,180) + (item.description && item.description.length>180 ? '...' : ''),
+                thumbnail: thumb,
+                source: resp.feed.name
+              });
+            });
+          }
+        });
+        const seen = new Set();
+        allNews = allNews.filter(item => {
+          if(seen.has(item.title)) return false;
+          seen.add(item.title);
+          return true;
+        });
+        shuffle(allNews);
+        renderNews();
+      });
+    }
+
+    setInterval(loadNews, 60000);
+
+    $('#showMoreNewsBtn').on('click', function() {
+      shownNewsCountNews = Math.min(shownNewsCountNews + PAGE_SIZE_NEWS, allNews.length);
+      renderNews();
+    });
+
+    $('#mainLogo, #mainTitle').on('click', function() { location.reload(); });
+
+    $('#lang').on('change', function() {
+      let lang = $(this).val();
+      localStorage.setItem('encyclopediaLang', lang);
+      currentLang = lang;
+      translateUI(lang);
+      loadNews();
+    });
+
+    function translateUI(lang) {
+      const translations = {
+        en: { search: 'Search', random: 'Random article', chat: 'AI Chat', showMore: "Show more news", noResults: "No results found.", preview: "Preview" },
+        uk: { search: 'Пошук', random: 'Випадкова стаття', chat: 'AI-чат', showMore: "Показати ще новини", noResults: "Нічого не знайдено.", preview: "Переглянути" },
+        ru: { search: 'Поиск', random: 'Случайная статья', chat: 'AI-чат', showMore: "Показать ещё новости", noResults: "Ничего не найдено.", preview: "Просмотр" },
+        pl: { search: 'Szukaj', random: 'Losowy artykuł', chat: 'AI-chat', showMore: "Pokaż więcej wiadomości", noResults: "Brak wyników.", preview: "Podgląd" },
+        de: { search: 'Suche', random: 'Zufälliger Artikel', chat: 'AI-Chat', showMore: "Mehr Nachrichten anzeigen", noResults: "Keine Ergebnisse gefunden.", preview: "Vorschau" },
+        fr: { search: 'Recherche', random: 'Article aléatoire', chat: 'AI-Chat', showMore: "Afficher plus d'actualités", noResults: "Aucun résultat.", preview: "Aperçu" },
+        es: { search: 'Buscar', random: 'Artículo aleatorio', chat: 'AI-Chat', showMore: "Mostrar más noticias", noResults: "No se encontraron resultados.", preview: "Vista previa" },
+        it: { search: 'Cerca', random: 'Articolo casuale', chat: 'AI-Chat', showMore: "Mostra altre notizie", noResults: "Nessun risultato trovato.", preview: "Anteprima" },
+        nb: { search: 'Søk', random: 'Tilfeldig artikkel', chat: 'AI-chat', showMore: "Vis flere nyheter", noResults: "Ingen resultater funnet.", preview: "Forhåndsvisning" },
+        he: { search: 'חיפוש', random: 'ערך אקראי', chat: 'AI-צ\'אט', showMore: "הצג עוד חדשות", noResults: "לא נמצאו תוצאות.", preview: "תצוגה מקדימה" },
+        zh: { search: '搜索', random: '随机条目', chat: 'AI聊天', showMore: "显示更多新闻", noResults: "未找到结果。", preview: "预览" },
+        ja: { search: '検索', random: 'おまかせ表示', chat: 'AIチャット', showMore: "さらにニュースを表示", noResults: "結果が見つかりません。", preview: "プレビュー" },
+        ko: { search: '검색', random: '임의 문서', chat: 'AI-챗', showMore: "뉴스 더보기", noResults: "검색 결과가 없습니다.", preview: "미리보기" }
+      };
+      let t = translations[lang] || translations['en'];
+      $('#searchBtnText').text(t.search);
+      $('#randomBtn').attr('title', t.random);
+      $('#openChatBtn').html('<i class="fa fa-comments"></i> ' + t.chat);
+      $('#showMoreNewsBtn').text(t.showMore);
+      $('#query').attr('placeholder', t.search);
+      $('#wikiModalLabel').text('');
+    }
+
+    $('#themeToggle').on('click', function() {
+      $('body').toggleClass('bg-dark');
+      let isDark = $('body').hasClass('bg-dark');
+      $(this).toggleClass('fa-moon fa-sun');
+      localStorage.setItem('encyclopediaTheme', isDark ? 'dark' : 'light');
+    });
+
+    $(function() {
+      let savedLang = localStorage.getItem('encyclopediaLang') || 'en';
+      $('#lang').val(savedLang);
+      currentLang = savedLang;
+      translateUI(currentLang);
+      let savedTheme = localStorage.getItem('encyclopediaTheme') || 'light';
+      if(savedTheme === 'dark') {
+        $('body').addClass('bg-dark');
+        $('#themeToggle').removeClass('fa-moon').addClass('fa-sun');
+      }
+      loadNews();
+    });
+
+    $('#searchForm').on('submit', function(e) {
+      e.preventDefault();
+      let query = $('#query').val().trim();
+      if(!query) return;
+      searchWikipedia(query, currentLang);
+    });
+
+    function searchWikipedia(query, lang) {
+      $('#results').html('<div class="text-center py-5"><div class="spinner-border"></div></div>');
+      $.ajax({
+        url: `https://${lang}.wikipedia.org/w/api.php`,
+        data: {
+          action: 'query',
+          list: 'search',
+          srsearch: query,
+          format: 'json',
+          origin: '*'
+        },
+        success: function(data) {
+          let html = '';
+          let t = {
+            preview: $('#lang').val() === 'en' ? 'Preview' : ($('#lang').val() === 'uk' ? 'Переглянути' : 'Preview'),
+            noResults: $('#showMoreNewsBtn').text() === "Show more news" ? "No results found." : "Нічого не знайдено."
+          };
+          if(data.query && data.query.search.length) {
+            html = data.query.search.map(item => `
+              <div class="mb-3">
+                <a href="https://${lang}.wikipedia.org/wiki/${encodeURIComponent(item.title)}" target="_blank" class="fw-bold">${item.title}</a>
+                <div>${item.snippet}</div>
+                <button class="btn btn-sm btn-outline-primary mt-1 open-wiki-modal" data-title="${encodeURIComponent(item.title)}">${t.preview}</button>
+              </div>
+            `).join('');
+          } else {
+            html = `<div class="alert alert-warning">${t.noResults}</div>`;
+          }
+          $('#results').html(html);
+        },
+        error: function() {
+          $('#results').html('<div class="alert alert-danger">Error loading results.</div>');
+        }
+      });
+    }
+
+    $('#query').on('input', function() {
+      let val = $(this).val();
+      if(val.length < 2) {
+        $('#autocomplete').empty();
+        return;
+      }
+      $.ajax({
+        url: `https://${currentLang}.wikipedia.org/w/api.php`,
+        data: {
+          action: 'opensearch',
+          search: val,
+          limit: 8,
+          format: 'json',
+          origin: '*'
+        },
+        success: function(data) {
+          let html = '';
+          if(data[1] && data[1].length) {
+            html = data[1].map(item => `<div class="autocomplete-suggestion">${item}</div>`).join('');
+          }
+          $('#autocomplete').html(html);
+        }
+      });
+    });
+
+    $('#autocomplete').on('click', '.autocomplete-suggestion', function() {
+      $('#query').val($(this).text());
+      $('#autocomplete').empty();
+      $('#searchForm').submit();
+    });
+
+    $(document).on('click', '.open-wiki-modal', function() {
+      let title = $(this).data('title');
+      $.ajax({
+        url: `https://${currentLang}.wikipedia.org/api/rest_v1/page/summary/${title}`,
+        success: function(data) {
+          $('#wikiModalLabel').text(data.title);
+          $('#wikiModalBody').html(`<p>${data.extract}</p>${data.thumbnail ? `<img src="${data.thumbnail.source}" class="img-fluid">` : ''}`);
+          var modal = new bootstrap.Modal(document.getElementById('wikiModal'));
+          modal.show();
+        }
+      });
+    });
+
+    $('#randomBtn').on('click', function() {
+      $.ajax({
+        url: `https://${currentLang}.wikipedia.org/w/api.php`,
+        data: {
+          action: 'query',
+          format: 'json',
+          list: 'random',
+          rnnamespace: 0,
+          rnlimit: 1,
+          origin: '*'
+        },
+        success: function(data) {
+          let title = data.query.random[0].title;
+          searchWikipedia(title, currentLang);
+        }
+      });
+    });
+
+    document.getElementById('openChatBtn').onclick = function() {
+      var chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
+      chatModal.show();
+      setTimeout(function() {
+        try {
+          var iframe = document.getElementById('chatIframe');
+          var test = iframe.contentWindow.location.href;
+          document.getElementById('chatFallback').style.display = 'none';
+          iframe.style.display = 'block';
+        } catch (e) {
+          document.getElementById('chatFallback').style.display = 'block';
+          document.getElementById('chatIframe').style.display = 'none';
+        }
+      }, 1200);
+    };
+
+    function toggleToTopBtn() {
+      var btn = document.getElementById('toTopBtn');
+      if (window.scrollY > 100) btn.style.display = 'flex';
+      else btn.style.display = 'none';
+    }
+    window.addEventListener('scroll', toggleToTopBtn);
+    document.getElementById('toTopBtn').onclick = function() {
+      window.scrollTo({top:0,behavior:'smooth'});
+    };
+  </script>
+</body>
+</html>
+
